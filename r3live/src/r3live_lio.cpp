@@ -602,6 +602,7 @@ int R3LIVE::service_LIO_update()
             downSizeFilterSurf.setInputCloud( feats_undistort );
             downSizeFilterSurf.filter( *feats_down );
             // cout <<"Preprocess cost time: " << tim.toc("Preprocess") << endl;
+            
             /*** initialize the map kdtree ***/
             if ( ( feats_down->points.size() > 1 ) && ( ikdtree.Root_Node == nullptr ) )
             {
