@@ -608,11 +608,12 @@ void Global_map::selection_points_for_projection(std::shared_ptr<Image_frame> &i
 
 }
 
-void Global_map::save_to_pcd(std::string dir_name, std::string _file_name, int save_pts_with_views )
+int Global_map::save_to_pcd(std::string dir_name, std::string _file_name, int save_pts_with_views )
 {
     Common_tools::Timer tim;
     Common_tools::create_dir(dir_name);
     std::string file_name = std::string(dir_name).append(_file_name);
+    int ret;
     scope_color(ANSI_COLOR_BLUE_BOLD);
     cout << "Save Rgb points to " << file_name << endl;
     fflush(stdout);
@@ -647,8 +648,10 @@ void Global_map::save_to_pcd(std::string dir_name, std::string _file_name, int s
     cout << "Total have " << pt_count << " points." << endl;
     tim.tic();
     cout << "Now write to: " << file_name << endl; 
-    pcl::io::savePCDFileBinary(std::string(file_name).append(".pcd"), pc_rgb);
+    ret = pcl::io::savePCDFileBinary(std::string(file_name).append(".pcd"), pc_rgb);
     cout << "Save PCD cost time = " << tim.toc() << endl;
+
+    return ret;
 }
 
 void Global_map::save_and_display_pointcloud(std::string dir_name, std::string file_name, int save_pts_with_views)

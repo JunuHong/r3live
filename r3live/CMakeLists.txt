@@ -59,6 +59,12 @@ endif()
 
 include_directories(${catkin_INCLUDE_DIRS})
 
+add_service_files(
+  DIRECTORY srv
+  FILES
+  map_service.srv
+)
+
 generate_messages(
  DEPENDENCIES
  geometry_msgs
@@ -77,7 +83,6 @@ include_directories(
   ./src/rgb_map 
   ./src/meshing
 )
-
 
 catkin_package()
 

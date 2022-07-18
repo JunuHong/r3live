@@ -848,7 +848,7 @@ int R3LIVE::service_LIO_update()
                         // }
 
                         g_lio_state = state_propagate + solution;
-                        print_dash_board();
+                        // print_dash_board();
                         // cout << ANSI_COLOR_RED_BOLD << "Run EKF uph, vec = " << vec.head<9>().transpose() << ANSI_COLOR_RESET << endl;
                         rot_add = solution.block< 3, 1 >( 0, 0 );
                         t_add = solution.block< 3, 1 >( 3, 0 );
@@ -1011,7 +1011,8 @@ int R3LIVE::service_LIO_update()
 
             /******* Publish Maps:  *******/
             sensor_msgs::PointCloud2 laserCloudMap;
-            pcl::toROSMsg( *featsFromMap, laserCloudMap );
+            //pcl::toROSMsg( *featsFromMap, laserCloudMap );
+            pcl::toROSMsg( *    , laserCloudMap );
             laserCloudMap.header.stamp.fromSec( Measures.lidar_end_time ); // ros::Time().fromSec(last_timestamp_lidar);
             laserCloudMap.header.frame_id = "world";
             pubLaserCloudMap.publish( laserCloudMap );

@@ -26,16 +26,16 @@
     <param name="if_remove_spikes" value="true" />
     
     <!-- Try to close small holes (with size smaller the given value) in the reconstructed surface (0 - disabled) -->
-    <param name="close_holes_dist" value="20" />
+    <param name="close_holes_dist" value="0" />
 
     <!-- Factor for smoothing the reconstructed surface, the bigger the value, the smoother the mesh. -->
-    <param name="smooth_mesh_factor" value="5" />
+    <param name="smooth_mesh_factor" value="1" />
     
     <!-- The working directory, where we input the offline maps files and output the reconstructed mesh  -->
-    <param name="working_dir" value="$(env HOME)/r3live_output" />
+    <param name="working_dir" value="$(env HOME)/data/r3live_output" />
     
     <!-- The factor of smoothing the texture of mesh -->
-    <param name="texturing_smooth_factor" value="10" />
+    <param name="texturing_smooth_factor" value="2" />
     
     <!-- The name of the offline map files (with suffix *.r3live) -->
     <param name="offline_map_name" value="test.r3live" />

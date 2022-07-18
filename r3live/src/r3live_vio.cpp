@@ -55,6 +55,8 @@ std::shared_ptr< Common_tools::ThreadPool > m_thread_pool_ptr;
 double                                      g_vio_frame_cost_time = 0;
 double                                      g_lio_frame_cost_time = 0;
 int                                         g_flag_if_first_rec_img = 1;
+int                                         image_skip_count = 0;
+
 #define DEBUG_PHOTOMETRIC 0
 #define USING_CERES 0
 void dump_lio_state_to_log( FILE *fp )
@@ -328,6 +330,14 @@ void R3LIVE::image_comp_callback( const sensor_msgs::CompressedImageConstPtr &ms
     {
         return; // Avoid subscribe the same image twice.
     }
+    
+    if ( image_skip_count < skip_image_frame-1 ) // every 4 image is collected
+    {
+        image_skip_count++; 
+        return;
+    }
+    image_skip_count = 0;
+    
     sub_image_typed = 2;
     g_received_compressed_img_msg.push_back( msg );
     if ( g_flag_if_first_rec_img )
@@ -434,6 +444,7 @@ void R3LIVE::load_vio_parameters()
 {
 
     std::vector< double > camera_intrinsic_data, camera_dist_coeffs_data, camera_ext_R_data, camera_ext_t_data;
+    m_ros_node_handle.getParam( "r3live_vio/skip_image_frame", skip_image_frame );
     m_ros_node_handle.getParam( "r3live_vio/image_width", m_vio_image_width );
     m_ros_node_handle.getParam( "r3live_vio/image_height", m_vio_image_heigh );
     m_ros_node_handle.getParam( "r3live_vio/camera_intrinsic", camera_intrinsic_data );
@@ -606,7 +617,7 @@ double get_huber_loss_scale( double reprojection_error, double outlier_threshold
 
 // ANCHOR - VIO_esikf
 const int minimum_iteration_pts = 10;
-bool      R3LIVE::vio_esikf( StatesGroup &state_in, Rgbmap_tracker &op_track )
+bool R3LIVE::vio_esikf( StatesGroup &state_in, Rgbmap_tracker &op_track )
 {
     Common_tools::Timer tim;
     tim.tic();
@@ -1084,6 +1095,17 @@ char R3LIVE::cv_keyboard_callback()
     return c;
 }
 
+bool R3LIVE::map_service(r3live::map_service::Request &req, r3live::map_service::Response &res)
+{
+    int success;
+    m_mvs_recorder.export_to_mvs( m_map_rgb_pts );
+    success = m_map_rgb_pts.save_to_pcd( m_map_output_dir, req.map_name, m_pub_pt_minimum_views );
+
+    res.success = success == 0;
+
+    return true;
+}
+
 // ANCHOR -  service_VIO_update
 void R3LIVE::service_VIO_update()
 {
@@ -1094,13 +1116,13 @@ void R3LIVE::service_VIO_update()
     m_map_rgb_pts.m_maximum_depth_for_projection = m_tracker_maximum_depth;
     
     /* Control panel show */
-    cv::imshow( "Control panel", generate_control_panel_img().clone() );
+    // cv::imshow( "Control panel", generate_control_panel_img().clone() );
     
     Common_tools::Timer tim;
     cv::Mat             img_get;
     while ( ros::ok() )
     {
-        cv_keyboard_callback();
+        // cv_keyboard_callback();
         while ( g_camera_lidar_queue.m_if_have_lidar_data == 0 )
         {
             ros::spinOnce();
@@ -1116,6 +1138,7 @@ void R3LIVE::service_VIO_update()
             std::this_thread::yield();
             continue;
         }
+        
         m_camera_data_mutex.lock();
         while ( m_queue_image_with_pose.size() > m_maximum_image_buffer )
         {
@@ -1127,6 +1150,7 @@ void R3LIVE::service_VIO_update()
 
         std::shared_ptr< Image_frame > img_pose = m_queue_image_with_pose.front();
         double                             message_time = img_pose->m_timestamp;
+        
         m_queue_image_with_pose.pop_front();
         m_camera_data_mutex.unlock();
         g_camera_lidar_queue.m_last_visual_time = img_pose->m_timestamp + g_lio_state.td_ext_i2c;
@@ -1158,7 +1182,7 @@ void R3LIVE::service_VIO_update()
             ros::spinOnce();
             std::this_thread::sleep_for( std::chrono::milliseconds( THREAD_SLEEP_TIM ) );
             std::this_thread::yield();
-            cv_keyboard_callback();
+            // cv_keyboard_callback();
         }
         g_cost_time_logger.record( tim, "Wait" );
         m_mutex_lio_process.lock();
@@ -1186,18 +1210,23 @@ void R3LIVE::service_VIO_update()
         }
         g_cost_time_logger.record( tim, "Ransac" );
         tim.tic( "Vio_f2f" );
+
         bool res_esikf = true, res_photometric = true;
         wait_render_thread_finish();
         res_esikf = vio_esikf( state_out, op_track );
+
         g_cost_time_logger.record( tim, "Vio_f2f" );
         tim.tic( "Vio_f2m" );
         res_photometric = vio_photometric( state_out, op_track, img_pose );
+
         g_cost_time_logger.record( tim, "Vio_f2m" );
         g_lio_state = state_out;
-        print_dash_board();
+
+        /* dash board */
+        // print_dash_board();
         set_image_pose( img_pose, state_out );
 
-        if ( 1 )
+        if ( 1 ) // Render RGB points
         {
             tim.tic( "Render" );
             // m_map_rgb_pts.render_pts_in_voxels(img_pose, m_last_added_rgb_pts_vec);
@@ -1232,10 +1261,12 @@ void R3LIVE::service_VIO_update()
         // cout << "Solve image pose cost " << tim.toc("Solve_pose") << endl;
         m_map_rgb_pts.update_pose_for_projection( img_pose, -0.4 );
         op_track.update_and_append_track_pts( img_pose, m_map_rgb_pts, m_track_windows_size / m_vio_scale_factor, 1000000 );
+
         g_cost_time_logger.record( tim, "Frame" );
         double frame_cost = tim.toc( "Frame" );
         g_image_vec.push_back( img_pose );
         frame_cost_time_vec.push_back( frame_cost );
+        
         if ( g_image_vec.size() > 10 )
         {
             g_image_vec.pop_front();
@@ -1244,7 +1275,8 @@ void R3LIVE::service_VIO_update()
         tim.tic( "Pub" );
         double display_cost_time = std::accumulate( frame_cost_time_vec.begin(), frame_cost_time_vec.end(), 0.0 ) / frame_cost_time_vec.size();
         g_vio_frame_cost_time = display_cost_time;
-        // publish_render_pts( m_pub_render_rgb_pts, m_map_rgb_pts );
+
+        publish_render_pts( m_pub_render_rgb_pts, m_map_rgb_pts );
         publish_camera_odom( img_pose, message_time );
         // publish_track_img( op_track.m_debug_track_img, display_cost_time );
         publish_track_img( img_pose->m_raw_img, display_cost_time );

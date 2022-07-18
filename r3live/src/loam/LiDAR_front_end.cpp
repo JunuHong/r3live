@@ -95,12 +95,12 @@ int main( int argc, char **argv )
     ros::NodeHandle n;
 
     n.param< int >( "Lidar_front_end/lidar_type", lidar_type, 0 );
-    n.param< double >( "Lidar_front_end/blind", blind, 0.1 );
-    n.param< double >( "Lidar_front_end/inf_bound", inf_bound, 4 );
+    n.param< double >( "Lidar_front_end/blind", blind, 1 );
+    n.param< double >( "Lidar_front_end/inf_bound", inf_bound, 10 );
     n.param< int >( "Lidar_front_end/N_SCANS", N_SCANS, 1 );
     n.param< int >( "Lidar_front_end/group_size", group_size, 8 );
-    n.param< double >( "Lidar_front_end/disA", disA, 0.01 );
-    n.param< double >( "Lidar_front_end/disB", disB, 0.1 );
+    n.param< double >( "Lidar_front_end/disA", disA, 0.01 ); // for surface detection
+    n.param< double >( "Lidar_front_end/disB", disB, 0.1 ); // for surface detection
     n.param< double >( "Lidar_front_end/p2l_ratio", p2l_ratio, 225 );
     n.param< double >( "Lidar_front_end/limit_maxmid", limit_maxmid, 6.25 );
     n.param< double >( "Lidar_front_end/limit_midmin", limit_midmin, 6.25 );
@@ -108,8 +108,8 @@ int main( int argc, char **argv )
     n.param< double >( "Lidar_front_end/jump_up_limit", jump_up_limit, 170.0 );
     n.param< double >( "Lidar_front_end/jump_down_limit", jump_down_limit, 8.0 );
     n.param< double >( "Lidar_front_end/cos160", cos160, 160.0 );
-    n.param< double >( "Lidar_front_end/edgea", edgea, 2 );
-    n.param< double >( "Lidar_front_end/edgeb", edgeb, 0.1 );
+    n.param< double >( "Lidar_front_end/edgea", edgea, 1.5 );  // for edge detection
+    n.param< double >( "Lidar_front_end/edgeb", edgeb, 0.05 ); // for edge detection
     n.param< double >( "Lidar_front_end/smallp_intersect", smallp_intersect, 172.5 );
     n.param< double >( "Lidar_front_end/smallp_ratio", smallp_ratio, 1.2 );
     n.param< int >( "Lidar_front_end/point_filter_num", point_filter_num, 1 );

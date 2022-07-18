@@ -1,18 +1,30 @@
 #include "IMU_Processing.hpp"
 #define COV_OMEGA_NOISE_DIAG 1e-1
-#define COV_ACC_NOISE_DIAG 0.4
-#define COV_GYRO_NOISE_DIAG 0.2
 
-#define COV_BIAS_ACC_NOISE_DIAG 0.05
-#define COV_BIAS_GYRO_NOISE_DIAG 0.1
+// #define COV_ACC_NOISE_DIAG 0.4
+// #define COV_GYRO_NOISE_DIAG 0.2
+
+// #define COV_BIAS_ACC_NOISE_DIAG 0.05
+// #define COV_BIAS_GYRO_NOISE_DIAG 0.1
+
+// #define COV_START_ACC_DIAG 1e-1
+// #define COV_START_GYRO_DIAG 1e-1
+
+#define COV_ACC_NOISE_DIAG 0.6
+#define COV_GYRO_NOISE_DIAG 1.0
+
+#define COV_BIAS_ACC_NOISE_DIAG 0.0001
+#define COV_BIAS_GYRO_NOISE_DIAG 0.0001
 
 #define COV_START_ACC_DIAG 1e-1
 #define COV_START_GYRO_DIAG 1e-1
+
+
 // #define COV_NOISE_EXT_I2C_R (0.0 * 1e-3)
 // #define COV_NOISE_EXT_I2C_T (0.0 * 1e-3)
 // #define COV_NOISE_EXT_I2C_Td (0.0 * 1e-3)
 
-
+#define CONST_GRAV -9.805
 
 double g_lidar_star_tim = 0;
 ImuProcess::ImuProcess() : b_first_frame_( true ), imu_need_init_( true ), last_imu_( nullptr ), start_timestamp_( -1 )
@@ -22,7 +34,7 @@ ImuProcess::ImuProcess() : b_first_frame_( true ), imu_need_init_( true ), last_
     init_iter_num = 1;
     cov_acc = Eigen::Vector3d( COV_START_ACC_DIAG, COV_START_ACC_DIAG, COV_START_ACC_DIAG );
     cov_gyr = Eigen::Vector3d( COV_START_GYRO_DIAG, COV_START_GYRO_DIAG, COV_START_GYRO_DIAG );
-    mean_acc = Eigen::Vector3d( 0, 0, -9.805 );
+    mean_acc = Eigen::Vector3d( 0, 0, CONST_GRAV );
     mean_gyr = Eigen::Vector3d( 0, 0, 0 );
     angvel_last = Zero3d;
     cov_proc_noise = Eigen::Matrix< double, DIM_OF_PROC_N, 1 >::Zero();
@@ -91,9 +103,11 @@ void ImuProcess::IMU_Initial( const MeasureGroup &meas, StatesGroup &state_inout
     }
 
     // TODO: fix the cov
+    
     cov_acc = Eigen::Vector3d( COV_START_ACC_DIAG, COV_START_ACC_DIAG, COV_START_ACC_DIAG );
     cov_gyr = Eigen::Vector3d( COV_START_GYRO_DIAG, COV_START_GYRO_DIAG, COV_START_GYRO_DIAG );
-    state_inout.gravity = Eigen::Vector3d( 0, 0, 9.805 );
+    // state_inout.gravity = Eigen::Vector3d( 0, 0, 9.805 );
+    state_inout.gravity = mean_acc;
     state_inout.rot_end = Eye3d;
     state_inout.bias_g = mean_gyr;
 }

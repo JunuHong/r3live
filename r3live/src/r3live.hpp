@@ -96,14 +96,16 @@ Dr. Fu Zhang < fuzhang@hku.hk >.
 #include "pointcloud_rgbd.hpp"
 #include "rgbmap_tracker.hpp"
 
+#include "r3live/map_service.h"
+
 #define THREAD_SLEEP_TIM 1
 
 #include "offline_map_recorder.hpp"
 
 #define INIT_TIME (0)
 // #define LASER_POINT_COV (0.0015) // Ori
-#define LASER_POINT_COV (0.00015)    
-#define NUM_MATCH_POINTS (5)
+#define LASER_POINT_COV (0.0015)    
+#define NUM_MATCH_POINTS (10)
 
 #define MAXN 360000
 const int laserCloudWidth = 48;
@@ -205,6 +207,7 @@ public:
     ros::Subscriber sub_pcl;
     ros::Subscriber sub_imu;
     ros::Subscriber sub_img, sub_img_comp;
+    ros::ServiceServer srv_map;
 
     ros::Publisher pub_track_img, pub_raw_img;
     ros::Publisher pub_odom_cam, pub_path_cam;
@@ -263,6 +266,7 @@ public:
     double m_tracker_minimum_depth = 3;
     double m_tracker_maximum_depth = 200;
     int m_if_record_mvs = 0;
+    int skip_image_frame = 0;
     cv::Mat intrinsic, dist_coeffs;
 
     mat_3_3 m_inital_rot_ext_i2c;
@@ -304,6 +308,7 @@ public:
     void service_process_img_buffer();
     void service_pub_rgb_maps();
     char cv_keyboard_callback();
+    bool map_service(r3live::map_service::Request &req, r3live::map_service::Response &res);
     void set_initial_state_cov(StatesGroup &stat);
     cv::Mat generate_control_panel_img();
     // ANCHOR -  service_pub_rgb_maps
@@ -348,7 +353,9 @@ public:
         sub_pcl = m_ros_node_handle.subscribe(LiDAR_pointcloud_topic.c_str(), 2000000, &R3LIVE::feat_points_cbk, this, ros::TransportHints().tcpNoDelay());
         // sub_img = m_ros_node_handle.subscribe(IMAGE_topic.c_str(), 1000000, &R3LIVE::image_callback, this, ros::TransportHints().tcpNoDelay());
         sub_img_comp = m_ros_node_handle.subscribe(IMAGE_topic_compressed.c_str(), 1000000, &R3LIVE::image_comp_callback, this, ros::TransportHints().tcpNoDelay());
-
+        
+        srv_map = m_ros_node_handle.advertiseService("r3live/map_service", &R3LIVE::map_service, this);
+        
         m_ros_node_handle.getParam("/initial_pose", m_initial_pose);
         m_pub_rgb_render_pointcloud_ptr_vec.resize(1e3);
         // ANCHOR - ROS parameters
@@ -420,7 +427,6 @@ public:
         m_lio_state_fp = fopen( std::string(m_map_output_dir).append("/lic_lio.log").c_str(), "w+");
         m_lio_costtime_fp = fopen(std::string(m_map_output_dir).append("/lic_lio_costtime.log").c_str(), "w+");
         m_thread_pool_ptr->commit_task(&R3LIVE::service_LIO_update, this);
-             
     }
     ~R3LIVE(){};
 
