@@ -20,16 +20,16 @@
     <param name="decimate_mesh" value="1" />
 
     <!-- spurious factor for removing faces with too long edges or isolated components (set 0 to disabled) -->
-    <param name="if_remove_spurious" value="40.0" />
+    <param name="if_remove_spurious" value="10.0" />
     
     <!-- The flag tp control the removal of spike faces -->
     <param name="if_remove_spikes" value="true" />
     
     <!-- Try to close small holes (with size smaller the given value) in the reconstructed surface (0 - disabled) -->
-    <param name="close_holes_dist" value="0" />
+    <param name="close_holes_dist" value="0.1" />
 
     <!-- Factor for smoothing the reconstructed surface, the bigger the value, the smoother the mesh. -->
-    <param name="smooth_mesh_factor" value="1" />
+    <param name="smooth_mesh_factor" value="1.5" />
     
     <!-- The working directory, where we input the offline maps files and output the reconstructed mesh  -->
     <param name="working_dir" value="$(env HOME)/data/r3live_output" />

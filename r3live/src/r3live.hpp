@@ -105,7 +105,7 @@ Dr. Fu Zhang < fuzhang@hku.hk >.
 #define INIT_TIME (0)
 // #define LASER_POINT_COV (0.0015) // Ori
 #define LASER_POINT_COV (0.0015)    
-#define NUM_MATCH_POINTS (10)
+#define NUM_MATCH_POINTS (100)
 
 #define MAXN 360000
 const int laserCloudWidth = 48;
@@ -351,7 +351,7 @@ public:
 
         sub_imu = m_ros_node_handle.subscribe(IMU_topic.c_str(), 2000000, &R3LIVE::imu_cbk, this, ros::TransportHints().tcpNoDelay());
         sub_pcl = m_ros_node_handle.subscribe(LiDAR_pointcloud_topic.c_str(), 2000000, &R3LIVE::feat_points_cbk, this, ros::TransportHints().tcpNoDelay());
-        // sub_img = m_ros_node_handle.subscribe(IMAGE_topic.c_str(), 1000000, &R3LIVE::image_callback, this, ros::TransportHints().tcpNoDelay());
+        sub_img = m_ros_node_handle.subscribe(IMAGE_topic.c_str(), 1000000, &R3LIVE::image_callback, this, ros::TransportHints().tcpNoDelay());
         sub_img_comp = m_ros_node_handle.subscribe(IMAGE_topic_compressed.c_str(), 1000000, &R3LIVE::image_comp_callback, this, ros::TransportHints().tcpNoDelay());
         
         srv_map = m_ros_node_handle.advertiseService("r3live/map_service", &R3LIVE::map_service, this);

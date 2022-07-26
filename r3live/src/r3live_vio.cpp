@@ -231,18 +231,9 @@ void R3LIVE::publish_track_img( cv::Mat &img, double frame_cost_time = -1 )
     {
         char fps_char[ 100 ];
         sprintf( fps_char, "Per-frame cost time: %.2f ms", frame_cost_time );
-        // sprintf(fps_char, "%.2f ms", frame_cost_time);
 
-        if ( pub_image.cols <= 640 )
-        {
-            cv::putText( pub_image, std::string( fps_char ), cv::Point( 30, 30 ), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar( 255, 255, 255 ), 2, 8,
-                         0 ); // 640 * 480
-        }
-        else if ( pub_image.cols > 640 )
-        {
-            cv::putText( pub_image, std::string( fps_char ), cv::Point( 30, 50 ), cv::FONT_HERSHEY_COMPLEX, 2, cv::Scalar( 255, 255, 255 ), 2, 8,
-                         0 ); // 1280 * 1080
-        }
+        cv::putText( pub_image, std::string( fps_char ), cv::Point( 30, 50 ), cv::FONT_HERSHEY_COMPLEX, 2/m_image_downsample_ratio, cv::Scalar( 255, 255, 255 ), 2, 8, 0 ); // 1280 * 1080
+
     }
     out_msg.image = pub_image; // Your cv::Mat
     pub_track_img.publish( out_msg );
@@ -1021,6 +1012,7 @@ void R3LIVE::service_pub_rgb_maps()
                 m_pub_rgb_render_pointcloud_ptr_vec[ cur_topic_idx ]->publish( ros_pc_msg );
                 std::this_thread::sleep_for( std::chrono::microseconds( sleep_time_aft_pub ) );
                 ros::spinOnce();
+                // std::cout << "RGB_MAP : " << cur_topic_idx << std::endl;
                 cur_topic_idx++;
             }
         }
@@ -1224,9 +1216,12 @@ void R3LIVE::service_VIO_update()
 
         /* dash board */
         // print_dash_board();
-        set_image_pose( img_pose, state_out );
 
-        if ( 1 ) // Render RGB points
+
+        set_image_pose( img_pose, state_out );
+        
+        // Render RGB points
+        if ( 1 )
         {
             tim.tic( "Render" );
             // m_map_rgb_pts.render_pts_in_voxels(img_pose, m_last_added_rgb_pts_vec);
@@ -1276,11 +1271,12 @@ void R3LIVE::service_VIO_update()
         double display_cost_time = std::accumulate( frame_cost_time_vec.begin(), frame_cost_time_vec.end(), 0.0 ) / frame_cost_time_vec.size();
         g_vio_frame_cost_time = display_cost_time;
 
-        publish_render_pts( m_pub_render_rgb_pts, m_map_rgb_pts );
+        // publish_render_pts( m_pub_render_rgb_pts, m_map_rgb_pts );
+
         publish_camera_odom( img_pose, message_time );
         // publish_track_img( op_track.m_debug_track_img, display_cost_time );
         publish_track_img( img_pose->m_raw_img, display_cost_time );
-
+        
         if ( m_if_pub_raw_img )
         {
             publish_raw_img( img_pose->m_raw_img );
@@ -1290,6 +1286,8 @@ void R3LIVE::service_VIO_update()
         {
             g_cost_time_logger.flush();
         }
+
+        // std::cout << "publish time cost : " << tim.toc("Pub") << std::endl;
         // cout << "Publish cost time " << tim.toc("Pub") << endl;
     }
 }

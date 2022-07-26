@@ -989,7 +989,8 @@ int R3LIVE::service_LIO_update()
                         *laserCloudFullResColor, Measures.lidar_end_time - g_camera_lidar_queue.m_first_imu_time, nullptr,
                         m_append_global_map_point_step );
                 }
-                stastic_cost_time.push_back( tim.toc( " ", 0 ) );
+                // stastic_cost_time.push_back( tim.toc( " ", 0 ) );
+                // std::cout << "append to global map time cost : " << tim.toc("",0) << std::endl;
             }
             if(0) // Uncomment this code scope to enable the publish of effective points.
             {
@@ -1011,8 +1012,7 @@ int R3LIVE::service_LIO_update()
 
             /******* Publish Maps:  *******/
             sensor_msgs::PointCloud2 laserCloudMap;
-            //pcl::toROSMsg( *featsFromMap, laserCloudMap );
-            pcl::toROSMsg( *    , laserCloudMap );
+            pcl::toROSMsg( *featsFromMap, laserCloudMap );
             laserCloudMap.header.stamp.fromSec( Measures.lidar_end_time ); // ros::Time().fromSec(last_timestamp_lidar);
             laserCloudMap.header.frame_id = "world";
             pubLaserCloudMap.publish( laserCloudMap );
