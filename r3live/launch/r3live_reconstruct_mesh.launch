@@ -1,7 +1,6 @@
 <launch>
-    
-    <param name="add_keyframe_R" value="10.0" />   <!-- 10   -->
-    <param name="add_keyframe_t" value="0.15" />   <!-- 0.15 -->
+    <param name="add_keyframe_R" value="5.0" />   <!-- 10   -->
+    <param name="add_keyframe_t" value="0.1" />   <!-- 0.15 -->
 
     <!-- The minimum distance (current point to existing points, unit in pixels) for inserting a new point to mesh (set 0 to disabled this constrain) -->
     <param name="insert_pt_dis" value="0.0" />
@@ -11,31 +10,31 @@
     <param name="if_use_free_space_support" value="false" />
     
     <!-- Multiplier adjusting the minimum thickness considered during visibility weighting -->
-    <param name="thickness_factor" value="1.0" />
+    <param name="thickness_factor" value="0.5" />
     
     <!-- Multiplier adjusting the quality weight considered during graph-cut -->
     <param name="quality_factor" value="0.0" />
     
     <!-- Decimation factor in range (0..1] to be applied to the reconstructed surface (set 1 to disabled) -->
-    <param name="decimate_mesh" value="1" />
+    <param name="decimate_mesh" value="0.8" />
 
     <!-- spurious factor for removing faces with too long edges or isolated components (set 0 to disabled) -->
-    <param name="if_remove_spurious" value="10.0" />
+    <param name="if_remove_spurious" value="50.0" />
     
     <!-- The flag tp control the removal of spike faces -->
     <param name="if_remove_spikes" value="true" />
     
     <!-- Try to close small holes (with size smaller the given value) in the reconstructed surface (0 - disabled) -->
-    <param name="close_holes_dist" value="0.1" />
+    <param name="close_holes_dist" value="1.0" />
 
     <!-- Factor for smoothing the reconstructed surface, the bigger the value, the smoother the mesh. -->
-    <param name="smooth_mesh_factor" value="1.5" />
+    <param name="smooth_mesh_factor" value="0.8" />
     
     <!-- The working directory, where we input the offline maps files and output the reconstructed mesh  -->
     <param name="working_dir" value="$(env HOME)/data/r3live_output" />
     
     <!-- The factor of smoothing the texture of mesh -->
-    <param name="texturing_smooth_factor" value="2" />
+    <param name="texturing_smooth_factor" value="1" />
     
     <!-- The name of the offline map files (with suffix *.r3live) -->
     <param name="offline_map_name" value="test.r3live" />

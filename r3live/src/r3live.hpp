@@ -104,8 +104,8 @@ Dr. Fu Zhang < fuzhang@hku.hk >.
 
 #define INIT_TIME (0)
 // #define LASER_POINT_COV (0.0015) // Ori
-#define LASER_POINT_COV (0.0015)    
-#define NUM_MATCH_POINTS (100)
+#define LASER_POINT_COV (0.0001)    
+#define NUM_MATCH_POINTS (20)
 
 #define MAXN 360000
 const int laserCloudWidth = 48;
@@ -391,7 +391,7 @@ public:
             get_ros_parameter( m_ros_node_handle, "r3live_lio/voxel_downsample_size_axis_z", m_voxel_downsample_size_axis_z,
                                m_voxel_downsample_size_surf );
             get_ros_parameter( m_ros_node_handle, "r3live_lio/filter_size_map", filter_size_map_min, 0.4 );
-            get_ros_parameter( m_ros_node_handle, "r3live_lio/cube_side_length", cube_len, 10000000.0 );
+            get_ros_parameter( m_ros_node_handle, "r3live_lio/cube_side_length", cube_len, 2000.0 );
             get_ros_parameter( m_ros_node_handle, "r3live_lio/maximum_pt_kdtree_dis", m_maximum_pt_kdtree_dis, 0.5 );
             get_ros_parameter( m_ros_node_handle, "r3live_lio/maximum_res_dis", m_maximum_res_dis, 0.3 );
             get_ros_parameter( m_ros_node_handle, "r3live_lio/planar_check_dis", m_planar_check_dis, 0.10 );

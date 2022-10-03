@@ -304,7 +304,7 @@ int Global_map::append_points_to_global_map(pcl::PointCloud<T> &pc_in, double  a
             }
             it++;
         }
-        cout << "Restored voxel number = " << voxels_recent_visited.size() << endl;
+        // cout << "Restored voxel number = " << voxels_recent_visited.size() << endl;
     }
     int number_of_voxels_before_add = voxels_recent_visited.size();
     int pt_size = pc_in.points.size();

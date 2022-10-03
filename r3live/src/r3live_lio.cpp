@@ -602,7 +602,7 @@ int R3LIVE::service_LIO_update()
             downSizeFilterSurf.setInputCloud( feats_undistort );
             downSizeFilterSurf.filter( *feats_down );
             // cout <<"Preprocess cost time: " << tim.toc("Preprocess") << endl;
-            
+
             /*** initialize the map kdtree ***/
             if ( ( feats_down->points.size() > 1 ) && ( ikdtree.Root_Node == nullptr ) )
             {
@@ -632,20 +632,20 @@ int R3LIVE::service_LIO_update()
             {
                 t1 = omp_get_wtime();
 
-                if ( m_if_publish_feature_map )
-                {
-                    PointVector().swap( ikdtree.PCL_Storage );
-                    ikdtree.flatten( ikdtree.Root_Node, ikdtree.PCL_Storage, NOT_RECORD );
-                    featsFromMap->clear();
-                    featsFromMap->points = ikdtree.PCL_Storage;
+                // if ( m_if_publish_feature_map )
+                // {
+                //     PointVector().swap( ikdtree.PCL_Storage );
+                //     ikdtree.flatten( ikdtree.Root_Node, ikdtree.PCL_Storage, NOT_RECORD );
+                //     featsFromMap->clear();
+                //     featsFromMap->points = ikdtree.PCL_Storage;
 
-                    sensor_msgs::PointCloud2 laserCloudMap;
-                    pcl::toROSMsg( *featsFromMap, laserCloudMap );
-                    laserCloudMap.header.stamp = ros::Time::now(); // ros::Time().fromSec(last_timestamp_lidar);
-                    // laserCloudMap.header.stamp.fromSec(Measures.lidar_end_time); // ros::Time().fromSec(last_timestamp_lidar);
-                    laserCloudMap.header.frame_id = "world";
-                    pubLaserCloudMap.publish( laserCloudMap );
-                }
+                //     sensor_msgs::PointCloud2 laserCloudMap;
+                //     pcl::toROSMsg( *featsFromMap, laserCloudMap );
+                //     laserCloudMap.header.stamp = ros::Time::now(); // ros::Time().fromSec(last_timestamp_lidar);
+                //     // laserCloudMap.header.stamp.fromSec(Measures.lidar_end_time); // ros::Time().fromSec(last_timestamp_lidar);
+                //     laserCloudMap.header.frame_id = "world";
+                //     pubLaserCloudMap.publish( laserCloudMap );
+                // }
 
                 std::vector< bool >               point_selected_surf( feats_down_size, true );
                 std::vector< std::vector< int > > pointSearchInd_surf( feats_down_size );
@@ -731,12 +731,10 @@ int R3LIVE::service_LIO_update()
                         for ( int j = 0; j < NUM_MATCH_POINTS; j++ )
                         {
                             // ANCHOR -  Planar check
-                            if ( fabs( pa * points_near[ j ].x + pb * points_near[ j ].y + pc * points_near[ j ].z + pd ) >
-                                 m_planar_check_dis ) // Raw 0.05
+                            if ( fabs( pa * points_near[ j ].x + pb * points_near[ j ].y + pc * points_near[ j ].z + pd ) > m_planar_check_dis ) // Raw 0.05
                             {
                                 // ANCHOR - Far distance pt processing
                                 if ( ori_pt_dis < maximum_pt_range * 0.90 || ( ori_pt_dis < m_long_rang_pt_dis ) )
-                                // if(1)
                                 {
                                     planeValid = false;
                                     point_selected_surf[ i ] = false;
@@ -748,9 +746,9 @@ int R3LIVE::service_LIO_update()
                         if ( planeValid )
                         {
                             float pd2 = pa * pointSel_tmpt.x + pb * pointSel_tmpt.y + pc * pointSel_tmpt.z + pd;
-                            float s = 1 - 0.9 * fabs( pd2 ) /
-                                              sqrt( sqrt( pointSel_tmpt.x * pointSel_tmpt.x + pointSel_tmpt.y * pointSel_tmpt.y +
-                                                          pointSel_tmpt.z * pointSel_tmpt.z ) );
+                            float s = 1 - 0.9 * fabs( pd2 ) / sqrt( sqrt( pointSel_tmpt.x * pointSel_tmpt.x +
+                                                                          pointSel_tmpt.y * pointSel_tmpt.y +
+                                                                          pointSel_tmpt.z * pointSel_tmpt.z ) );
                             // ANCHOR -  Point to plane distance
                             double acc_distance = ( ori_pt_dis < m_long_rang_pt_dis ) ? m_maximum_res_dis : 1.0;
                             if ( pd2 < acc_distance )
@@ -1010,12 +1008,15 @@ int R3LIVE::service_LIO_update()
                 pubLaserCloudEffect.publish( laserCloudFullRes3 );
             }
 
-            /******* Publish Maps:  *******/
-            sensor_msgs::PointCloud2 laserCloudMap;
-            pcl::toROSMsg( *featsFromMap, laserCloudMap );
-            laserCloudMap.header.stamp.fromSec( Measures.lidar_end_time ); // ros::Time().fromSec(last_timestamp_lidar);
-            laserCloudMap.header.frame_id = "world";
-            pubLaserCloudMap.publish( laserCloudMap );
+            if(0)
+            {
+                /******* Publish Maps:  *******/
+                sensor_msgs::PointCloud2 laserCloudMap;
+                pcl::toROSMsg( *featsFromMap, laserCloudMap );
+                laserCloudMap.header.stamp.fromSec( Measures.lidar_end_time ); // ros::Time().fromSec(last_timestamp_lidar);
+                laserCloudMap.header.frame_id = "world";
+                pubLaserCloudMap.publish( laserCloudMap );
+            }
 
             /******* Publish Odometry ******/
             geometry_msgs::Quaternion geoQuat = tf::createQuaternionMsgFromRollPitchYaw( euler_cur( 0 ), euler_cur( 1 ), euler_cur( 2 ) );

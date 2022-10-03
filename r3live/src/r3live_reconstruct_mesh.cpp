@@ -269,7 +269,7 @@ void reconstruct_mesh( Offline_map_recorder &r3live_map_recorder, std::string ou
     r3live_map_to_mvs_scene( r3live_map_recorder, m_images, m_pointcloud );
     // return;
     
-    ReconstructMesh( g_insert_pt_dis, g_if_use_free_space_support, 4, g_thickness_factor, g_quality_factor, reconstructed_mesh, m_images, m_pointcloud );
+    ReconstructMesh( g_insert_pt_dis, g_if_use_free_space_support, 50, g_thickness_factor, g_quality_factor, reconstructed_mesh, m_images, m_pointcloud );
     printf( "Mesh reconstruction completed: %u vertices, %u faces\n", reconstructed_mesh.vertices.GetSize(), reconstructed_mesh.faces.GetSize() );
     
     cout << "Clean mesh [1/3]: ";

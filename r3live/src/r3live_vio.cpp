@@ -58,7 +58,7 @@ int                                         g_flag_if_first_rec_img = 1;
 int                                         image_skip_count = 0;
 
 #define DEBUG_PHOTOMETRIC 0
-#define USING_CERES 0
+#define USING_CERES 1
 void dump_lio_state_to_log( FILE *fp )
 {
     if ( fp != nullptr && g_camera_lidar_queue.m_if_dump_log )
@@ -1091,7 +1091,7 @@ bool R3LIVE::map_service(r3live::map_service::Request &req, r3live::map_service:
 {
     int success;
     m_mvs_recorder.export_to_mvs( m_map_rgb_pts );
-    success = m_map_rgb_pts.save_to_pcd( m_map_output_dir, req.map_name, m_pub_pt_minimum_views );
+    success = m_map_rgb_pts.save_to_pcd( m_map_output_dir+"/", req.map_name+".pcd", m_pub_pt_minimum_views );
 
     res.success = success == 0;
 
