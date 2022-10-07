@@ -13,7 +13,7 @@ Lidar_front_end:
 
 r3live_common:
    if_dump_log: 0                   # If recording ESIKF update log. [default = 0]
-   record_offline_map: 1            # If recording offline map. [default = 1]
+   record_offline_map: 0            # If recording offline map. [default = 1]
    pub_pt_minimum_views: 5          # Publish points which have been render up to "pub_pt_minimum_views" time. [default = 3]
    minimum_pts_size: 0.01           # The minimum distance for every two points in Global map (unit in meter). [default = 0.01] 
    image_downsample_ratio: 5        # The downsample ratio of the input image. [default = 1]
@@ -25,7 +25,7 @@ r3live_common:
    recent_visited_voxel_activated_time : 0.0
 
 r3live_vio:
-   skip_image_frame: 3
+   skip_image_frame: 2
    image_width: 1280
    image_height: 1024
    camera_intrinsic:
@@ -42,9 +42,9 @@ r3live_vio:
    
 r3live_lio:        
    lio_update_point_step: 1   # Point step used for LIO update.  
-   max_iteration: 10           # Maximum times of LIO esikf.
+   max_iteration: 5           # Maximum times of LIO esikf.
    lidar_time_delay: 0        # The time-offset between LiDAR and IMU, provided by user. 
-   filter_size_corner: 0.1
-   filter_size_surf: 0.1
-   filter_size_surf_z: 0.1
-   filter_size_map: 0.1
+   filter_size_corner: 0.3
+   filter_size_surf: 0.3
+   filter_size_surf_z: 0.3
+   filter_size_map: 0.3

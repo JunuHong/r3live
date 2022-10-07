@@ -1091,7 +1091,7 @@ bool R3LIVE::map_service(r3live::map_service::Request &req, r3live::map_service:
 {
     int success;
     m_mvs_recorder.export_to_mvs( m_map_rgb_pts );
-    success = m_map_rgb_pts.save_to_pcd( m_map_output_dir+"/", req.map_name+".pcd", m_pub_pt_minimum_views );
+    success = m_map_rgb_pts.save_to_pcd( m_map_output_dir+"/", req.map_name, m_pub_pt_minimum_views );
 
     res.success = success == 0;
 
@@ -1196,10 +1196,10 @@ void R3LIVE::service_VIO_update()
         set_image_pose( img_pose, state_out );
 
         // ANCHOR -  remove point using PnP.
-        if ( op_track.remove_outlier_using_ransac_pnp( img_pose ) == 0 )
-        {
-            cout << ANSI_COLOR_RED_BOLD << "****** Remove_outlier_using_ransac_pnp error*****" << ANSI_COLOR_RESET << endl;
-        }
+        // if ( op_track.remove_outlier_using_ransac_pnp( img_pose ) == 0 )
+        // {
+        //     cout << ANSI_COLOR_RED_BOLD << "****** Remove_outlier_using_ransac_pnp error*****" << ANSI_COLOR_RESET << endl;
+        // }
         g_cost_time_logger.record( tim, "Ransac" );
         tim.tic( "Vio_f2f" );
 
@@ -1215,7 +1215,7 @@ void R3LIVE::service_VIO_update()
         g_lio_state = state_out;
 
         /* dash board */
-        // print_dash_board();
+        print_dash_board();
 
 
         set_image_pose( img_pose, state_out );
@@ -1271,7 +1271,7 @@ void R3LIVE::service_VIO_update()
         double display_cost_time = std::accumulate( frame_cost_time_vec.begin(), frame_cost_time_vec.end(), 0.0 ) / frame_cost_time_vec.size();
         g_vio_frame_cost_time = display_cost_time;
 
-        // publish_render_pts( m_pub_render_rgb_pts, m_map_rgb_pts );
+        publish_render_pts( m_pub_render_rgb_pts, m_map_rgb_pts );
 
         publish_camera_odom( img_pose, message_time );
         // publish_track_img( op_track.m_debug_track_img, display_cost_time );

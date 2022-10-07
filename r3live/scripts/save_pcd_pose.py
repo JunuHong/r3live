@@ -12,6 +12,7 @@ import sensor_msgs.point_cloud2 as pc2
 
 import numpy as np
 import open3d as o3d
+from collections import deque
 from ctypes import * # convert float to uint32
 
 FIELDS_XYZ = [
@@ -32,15 +33,7 @@ convert_rgbFloat_to_tuple = lambda rgb_float: convert_rgbUint32_to_tuple(
     int(cast(pointer(c_float(rgb_float)), POINTER(c_uint32)).contents.value)
 )
 
-
-def pose_to_mat(pose_msg):
-    return np.matmul(
-        tf.listener.xyz_to_mat44(pose_msg.pose.pose.position),
-        tf.listener.xyzw_to_mat44(pose_msg.pose.pose.orientation),
-    )
-
 def convertCloudFromRosToOpen3d(ros_cloud):
-
     # Get cloud data from ros_cloud
     field_names=[field.name for field in ros_cloud.fields]
     cloud_data = list(pc2.read_points(ros_cloud, skip_nans=True, field_names = field_names))
@@ -75,39 +68,75 @@ def convertCloudFromRosToOpen3d(ros_cloud):
     # return
     return open3d_cloud
 
+def pose_to_mat(pose_msg):
+    return np.matmul(tf.listener.xyz_to_mat44(pose_msg.pose.pose.position),
+                     tf.listener.xyzw_to_mat44(pose_msg.pose.pose.orientation),
+            )
 
+def inverse_se3(trans):
+    trans_inverse = np.eye(4)
+    trans_inverse[:3, :3] = trans[:3, :3].T                          #R
+    trans_inverse[:3, 3] = -np.matmul(trans[:3, :3].T, trans[:3, 3]) #t
+    return trans_inverse
 
-received_cloud = None
-count = 0
+received_cloud = o3d.geometry.PointCloud()
+q_pose = deque(maxlen=10)
+q_point = deque(maxlen=10)
 poses = []
-time = 0.0
+count = 0
+
 
 def pointcloud_callback(msg):
-    global received_ros_cloud, count
-    received_cloud=convertCloudFromRosToOpen3d(msg)
-    output_filename = output_dir + "full" + str(count) + ".pcd"
-    o3d.io.write_point_cloud(output_filename, received_cloud)
-    print("saved {}".format("full"+str(count)))
-    count += 1
+    global q_point
+    q_point.append([msg.header.seq, msg.header.stamp.to_sec(), convertCloudFromRosToOpen3d(msg)])
+
 
 def odom_callback(msg):
-    global pose
-    pose = pose_to_mat(msg)
-    time = msg.header.stamp.to_sec()
-    pose[3,3] = time
-    poses.append(pose)
-    print("saved {}".format(str(msg.header.seq)))
+    global q_pose
+    cur_pose = pose_to_mat(msg)
+    q_pose.append([msg.header.seq, msg.header.stamp.to_sec(), cur_pose])
+
+def sync():
+    global q_pose, q_point
+    synced = False
+    if not q_pose or not q_point:
+        return False, None, None, None
+    print(len(q_pose), len(q_point))
+
+    seq_pose, t_pose, pose = q_pose.popleft()
+    while q_point:
+        seq_point, t_point, point = q_point.popleft()
+        if abs(t_point - t_pose) < 0.01:
+            synced = True
+            break
+    q_pose.clear()
+    q_point.clear()
+    return synced, pose, point, t_point
+
+def save():
+    global q_pose, q_point, count, poses
+    synced, cur_pose, received_cloud, time = sync()
+    if not synced:
+        return
+
+    body_cloud = received_cloud.transform(inverse_se3(cur_pose))
+    output_filename = output_dir + "full" + str(count) + ".pcd"
+    if (o3d.io.write_point_cloud(output_filename, body_cloud)):
+        print("saved {}".format("full"+str(count)))
+        cur_pose[3,3] = time
+        poses.append(cur_pose)
+        count += 1
 
 if __name__ == "__main__":
     rospy.init_node('save_pcd_pose', anonymous=True)
-    
+
     rospy.Subscriber("/render_pts", PointCloud2, pointcloud_callback)
     rospy.Subscriber("/aft_mapped_to_init", Odometry, odom_callback)
-    
     output_dir = "/home/hong/project_codes/BALM/datas/custom/"
-    
+
     while not rospy.is_shutdown():
-        continue
+        save()
+
     poses = np.array(poses).reshape((-1,4))
     np.savetxt(output_dir+"alidarPose.csv", poses, fmt='%.5f', delimiter=',')
     print("saved aLidarPoses")
