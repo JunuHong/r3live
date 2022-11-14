@@ -11,6 +11,6 @@
     
     <arg name="rviz" default="1" />
     <group if="$(arg rviz)">
-        <node name="rvizvisualisation" pkg="rviz" type="rviz" output="log" args="-d $(find r3live)/../config/rviz/r3live_rviz_config.rviz" />
+        <node launch-prefix="nice" name="rvizvisualisation" pkg="rviz" type="rviz" output="log" args="-d $(find r3live)/../config/rviz/r3live_rviz_config.rviz" />
     </group>
 </launch>

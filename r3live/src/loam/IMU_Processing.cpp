@@ -1,30 +1,31 @@
 #include "IMU_Processing.hpp"
 #define COV_OMEGA_NOISE_DIAG 1e-1
+// Orig
+#define COV_ACC_NOISE_DIAG 0.4
+#define COV_GYRO_NOISE_DIAG 0.2
 
-// #define COV_ACC_NOISE_DIAG 0.4
-// #define COV_GYRO_NOISE_DIAG 0.2
-
-// #define COV_BIAS_ACC_NOISE_DIAG 0.05
-// #define COV_BIAS_GYRO_NOISE_DIAG 0.1
-
-// #define COV_START_ACC_DIAG 1e-1
-// #define COV_START_GYRO_DIAG 1e-1
-
-#define COV_ACC_NOISE_DIAG 0.6
-#define COV_GYRO_NOISE_DIAG 1.0
-
-#define COV_BIAS_ACC_NOISE_DIAG 0.0001
-#define COV_BIAS_GYRO_NOISE_DIAG 0.0001
+#define COV_BIAS_ACC_NOISE_DIAG 0.05
+#define COV_BIAS_GYRO_NOISE_DIAG 0.1
 
 #define COV_START_ACC_DIAG 1e-1
 #define COV_START_GYRO_DIAG 1e-1
+
+// Test
+// #define COV_ACC_NOISE_DIAG 0.01
+// #define COV_GYRO_NOISE_DIAG 0.01
+
+// #define COV_BIAS_ACC_NOISE_DIAG 0.001
+// #define COV_BIAS_GYRO_NOISE_DIAG 0.001
+
+// #define COV_START_ACC_DIAG 1e-3
+// #define COV_START_GYRO_DIAG 1e-3
 
 
 // #define COV_NOISE_EXT_I2C_R (0.0 * 1e-3)
 // #define COV_NOISE_EXT_I2C_T (0.0 * 1e-3)
 // #define COV_NOISE_EXT_I2C_Td (0.0 * 1e-3)
 
-#define CONST_GRAV -9.805
+#define CONST_GRAV -9.800
 
 double g_lidar_star_tim = 0;
 ImuProcess::ImuProcess() : b_first_frame_( true ), imu_need_init_( true ), last_imu_( nullptr ), start_timestamp_( -1 )

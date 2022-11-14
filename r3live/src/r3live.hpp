@@ -104,7 +104,7 @@ Dr. Fu Zhang < fuzhang@hku.hk >.
 
 #define INIT_TIME (0)
 // #define LASER_POINT_COV (0.0015) // Ori
-#define LASER_POINT_COV (0.0001)    
+#define LASER_POINT_COV (0.00015)
 #define NUM_MATCH_POINTS (20)
 
 #define MAXN 360000
@@ -179,8 +179,8 @@ public:
     std::deque<sensor_msgs::Imu::ConstPtr> imu_buffer_vio;
 
     //surf feature in map
-    PointCloudXYZINormal::Ptr featsFromMap;     
-    PointCloudXYZINormal::Ptr cube_points_add;  
+    PointCloudXYZINormal::Ptr featsFromMap;
+    PointCloudXYZINormal::Ptr cube_points_add;
     //all points
     PointCloudXYZINormal::Ptr laserCloudFullRes2; 
 
@@ -247,7 +247,7 @@ public:
     std::mutex g_mutex_render;
     std::shared_ptr<Image_frame> g_last_image_pose_for_render = nullptr;
     std::list<double> frame_cost_time_vec;
-    Rgbmap_tracker op_track;    
+    Rgbmap_tracker op_track;
     Global_map m_map_rgb_pts;
     int m_maximum_image_buffer = 2;
     int m_track_windows_size = 50;
@@ -391,11 +391,11 @@ public:
             get_ros_parameter( m_ros_node_handle, "r3live_lio/voxel_downsample_size_axis_z", m_voxel_downsample_size_axis_z,
                                m_voxel_downsample_size_surf );
             get_ros_parameter( m_ros_node_handle, "r3live_lio/filter_size_map", filter_size_map_min, 0.4 );
-            get_ros_parameter( m_ros_node_handle, "r3live_lio/cube_side_length", cube_len, 2000.0 );
+            get_ros_parameter( m_ros_node_handle, "r3live_lio/cube_side_length", cube_len, 1000.0 );
             get_ros_parameter( m_ros_node_handle, "r3live_lio/maximum_pt_kdtree_dis", m_maximum_pt_kdtree_dis, 0.5 );
             get_ros_parameter( m_ros_node_handle, "r3live_lio/maximum_res_dis", m_maximum_res_dis, 0.3 );
-            get_ros_parameter( m_ros_node_handle, "r3live_lio/planar_check_dis", m_planar_check_dis, 0.10 );
-            get_ros_parameter( m_ros_node_handle, "r3live_lio/long_rang_pt_dis", m_long_rang_pt_dis, 500.0 );
+            get_ros_parameter( m_ros_node_handle, "r3live_lio/planar_check_dis", m_planar_check_dis, 0.1 );
+            get_ros_parameter( m_ros_node_handle, "r3live_lio/long_rang_pt_dis", m_long_rang_pt_dis, 300.0 );
             get_ros_parameter( m_ros_node_handle, "r3live_lio/publish_feature_map", m_if_publish_feature_map, false );
             get_ros_parameter( m_ros_node_handle, "r3live_lio/lio_update_point_step", m_lio_update_point_step, 1 );
         }

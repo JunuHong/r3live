@@ -1,0 +1,26 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/hong/catkin_ws/devel/include/**",
+        "/home/hong/sensor_ws/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/hong/catkin_ws/src/FAST_LIO/include/**",
+        "/home/hong/catkin_ws/src/faster-lio/include/**",
+        "/home/hong/kvrc_ws/src/KVRC2022/main_code/include/**",
+        "/home/hong/catkin_ws/src/livox_camera_calib/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
