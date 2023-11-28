@@ -1,0 +1,13 @@
+<launch>
+    <!-- Subscribed topics -->
+    <param name="data_path" type="string" value="/home/hong/catkin_ws/src/r3live/log" />
+    <param name="image_topic" type="string" value="/camera/image_color/compressed" />
+    <param name="lidar_topic" type="string" value="/livox/lidar" />
+    
+    <node pkg="r3live" type="data_logger" name="data_logger"  output="screen" required="true"/>
+    
+    <arg name="rviz" default="0" />
+    <group if="$(arg rviz)">
+        <node launch-prefix="nice" name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find r3live)/../config/rviz/rviz_data_log.rviz" />
+    </group>
+</launch>

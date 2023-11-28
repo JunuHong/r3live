@@ -58,7 +58,7 @@ int                                         g_flag_if_first_rec_img = 1;
 int                                         image_skip_count = 0;
 
 #define DEBUG_PHOTOMETRIC 0
-#define USING_CERES 1
+#define USING_CERES 0
 void dump_lio_state_to_log( FILE *fp )
 {
     if ( fp != nullptr && g_camera_lidar_queue.m_if_dump_log )
@@ -126,7 +126,7 @@ void R3LIVE::print_dash_board()
     }
     std::string out_str_line_1, out_str_line_2;
     out_str_line_1 = std::string(        "| System-time | LiDAR-frame | Camera-frame |  Pts in maps | Memory used (Mb) |") ;
-    //                                    1             16            30             45             60     
+    //                                    1             16            30             45             60
     // clang-format on
     out_str_line_2.reserve( 1e3 );
     out_str_line_2.append( "|   " ).append( Common_tools::get_current_time_str() );
@@ -324,7 +324,7 @@ void R3LIVE::image_comp_callback( const sensor_msgs::CompressedImageConstPtr &ms
     
     if ( image_skip_count < skip_image_frame-1 ) // every 4 image is collected
     {
-        image_skip_count++; 
+        image_skip_count++;
         return;
     }
     image_skip_count = 0;
@@ -442,6 +442,7 @@ void R3LIVE::load_vio_parameters()
     m_ros_node_handle.getParam( "r3live_vio/camera_dist_coeffs", camera_dist_coeffs_data );
     m_ros_node_handle.getParam( "r3live_vio/camera_ext_R", camera_ext_R_data );
     m_ros_node_handle.getParam( "r3live_vio/camera_ext_t", camera_ext_t_data );
+    m_ros_node_handle.getParam( "r3live_vio/skip_image_frame", image_skip_count );
 
     CV_Assert( ( m_vio_image_width != 0 && m_vio_image_heigh != 0 ) );
 
@@ -911,7 +912,7 @@ bool R3LIVE::vio_photometric( StatesGroup &state_in, Rgbmap_tracker &op_track, s
             }
         }
         R_mat_inv_spa = R_mat_inv.sparseView();
-       
+
         last_avr_repro_err = acc_photometric_error;
         if ( avail_pt_count < minimum_iteration_pts )
         {
@@ -1031,7 +1032,7 @@ void R3LIVE::service_pub_rgb_maps()
         ros::spinOnce();
         m_pub_rgb_render_pointcloud_ptr_vec[ cur_topic_idx ]->publish( ros_pc_msg );
         cur_topic_idx++;
-        if ( cur_topic_idx >= 45 ) // Maximum pointcloud topics = 45.
+        if ( cur_topic_idx >= 35 ) // Maximum pointcloud topics = 45.
         {
             number_of_pts_per_topic *= 1.5;
             sleep_time_aft_pub *= 1.5;
@@ -1054,6 +1055,7 @@ void R3LIVE::publish_render_pts( ros::Publisher &pts_pub, Global_map &m_map_rgb_
         {
             pcl::PointXYZRGB           pt;
             std::shared_ptr< RGB_pts > rgb_pt = ( *it )->m_pts_in_grid[ pt_idx ];
+            // if ( rgb_pt->m_N_rgb < m_pub_pt_minimum_views ) continue;
             pt.x = rgb_pt->m_pos[ 0 ];
             pt.y = rgb_pt->m_pos[ 1 ];
             pt.z = rgb_pt->m_pos[ 2 ];
@@ -1130,7 +1132,7 @@ void R3LIVE::service_VIO_update()
             std::this_thread::yield();
             continue;
         }
-        
+
         m_camera_data_mutex.lock();
         while ( m_queue_image_with_pose.size() > m_maximum_image_buffer )
         {
@@ -1142,7 +1144,7 @@ void R3LIVE::service_VIO_update()
 
         std::shared_ptr< Image_frame > img_pose = m_queue_image_with_pose.front();
         double                             message_time = img_pose->m_timestamp;
-        
+
         m_queue_image_with_pose.pop_front();
         m_camera_data_mutex.unlock();
         g_camera_lidar_queue.m_last_visual_time = img_pose->m_timestamp + g_lio_state.td_ext_i2c;
@@ -1196,10 +1198,10 @@ void R3LIVE::service_VIO_update()
         set_image_pose( img_pose, state_out );
 
         // ANCHOR -  remove point using PnP.
-        // if ( op_track.remove_outlier_using_ransac_pnp( img_pose ) == 0 )
-        // {
-        //     cout << ANSI_COLOR_RED_BOLD << "****** Remove_outlier_using_ransac_pnp error*****" << ANSI_COLOR_RESET << endl;
-        // }
+        if ( op_track.remove_outlier_using_ransac_pnp( img_pose ) == 0 )
+        {
+            cout << ANSI_COLOR_RED_BOLD << "****** Remove_outlier_using_ransac_pnp error*****" << ANSI_COLOR_RESET << endl;
+        }
         g_cost_time_logger.record( tim, "Ransac" );
         tim.tic( "Vio_f2f" );
 
@@ -1215,7 +1217,7 @@ void R3LIVE::service_VIO_update()
         g_lio_state = state_out;
 
         /* dash board */
-        print_dash_board();
+        // print_dash_board();
 
 
         set_image_pose( img_pose, state_out );
@@ -1228,16 +1230,12 @@ void R3LIVE::service_VIO_update()
             if ( 1 ) // Using multiple threads for rendering
             {
                 m_map_rgb_pts.m_if_get_all_pts_in_boxes_using_mp = 0;
-                // m_map_rgb_pts.render_pts_in_voxels_mp(img_pose, &m_map_rgb_pts.m_rgb_pts_in_recent_visited_voxels,
-                // img_pose->m_timestamp);
                 m_render_thread = std::make_shared< std::shared_future< void > >( m_thread_pool_ptr->commit_task(
                     render_pts_in_voxels_mp, img_pose, &m_map_rgb_pts.m_voxels_recent_visited, img_pose->m_timestamp ) );
             }
             else
             {
                 m_map_rgb_pts.m_if_get_all_pts_in_boxes_using_mp = 0;
-                // m_map_rgb_pts.render_pts_in_voxels( img_pose, m_map_rgb_pts.m_rgb_pts_in_recent_visited_voxels,
-                // img_pose->m_timestamp );
             }
             m_map_rgb_pts.m_last_updated_frame_idx = img_pose->m_frame_idx;
             g_cost_time_logger.record( tim, "Render" );
@@ -1245,7 +1243,6 @@ void R3LIVE::service_VIO_update()
             tim.tic( "Mvs_record" );
             if ( m_if_record_mvs )
             {
-                // m_mvs_recorder.insert_image_and_pts( img_pose, m_map_rgb_pts.m_voxels_recent_visited );
                 m_mvs_recorder.insert_image_and_pts( img_pose, m_map_rgb_pts.m_pts_last_hitted );
             }
             g_cost_time_logger.record( tim, "Mvs_record" );
@@ -1271,8 +1268,9 @@ void R3LIVE::service_VIO_update()
         double display_cost_time = std::accumulate( frame_cost_time_vec.begin(), frame_cost_time_vec.end(), 0.0 ) / frame_cost_time_vec.size();
         g_vio_frame_cost_time = display_cost_time;
 
+        // tim.tic("Render");
         publish_render_pts( m_pub_render_rgb_pts, m_map_rgb_pts );
-
+        // std::cout << tim.toc("Render") << std::endl;
         publish_camera_odom( img_pose, message_time );
         // publish_track_img( op_track.m_debug_track_img, display_cost_time );
         publish_track_img( img_pose->m_raw_img, display_cost_time );
@@ -1288,6 +1286,5 @@ void R3LIVE::service_VIO_update()
         }
 
         // std::cout << "publish time cost : " << tim.toc("Pub") << std::endl;
-        // cout << "Publish cost time " << tim.toc("Pub") << endl;
     }
 }

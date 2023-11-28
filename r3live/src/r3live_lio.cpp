@@ -523,7 +523,7 @@ int R3LIVE::service_LIO_update()
     std::shared_ptr< ImuProcess > p_imu( new ImuProcess() );
     m_imu_process = p_imu;
     //------------------------------------------------------------------------------------------------------
-    ros::Rate rate( 5000 );
+    ros::Rate rate( 10000 );
     bool      status = ros::ok();
     g_camera_lidar_queue.m_liar_frame_buf = &lidar_buffer;
     set_initial_state_cov( g_lio_state );
@@ -1008,7 +1008,7 @@ int R3LIVE::service_LIO_update()
                 pubLaserCloudEffect.publish( laserCloudFullRes3 );
             }
 
-            if(0)
+            if(1) // Publish Laser Maps
             {
                 /******* Publish Maps:  *******/
                 sensor_msgs::PointCloud2 laserCloudMap;

@@ -1,7 +1,7 @@
-# cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.3)
 project(r3live)
 
-set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_BUILD_TYPE "RELEASE")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++14 -O3 -lboost_system -msse2 -msse3 -pthread -Wenum-compare") # -Wall
 set(CMAKE_CXX_STANDARD 14)
@@ -103,6 +103,14 @@ if(Ceres_FOUND)
   target_link_libraries(r3live_cam_cali_create_cali_board ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 endif()
 add_executable(test_timer src/tools/test_timer.cpp)
+
+add_executable(data_logger src/data_log.cpp)
+target_link_libraries(data_logger
+                          ${catkin_LIBRARIES}
+                          ${OpenCV_LIBRARIES}
+                          pcl_common
+                          pcl_io)
+
 
 add_executable(r3live_mapping src/r3live.cpp 
                 src/r3live_lio.cpp

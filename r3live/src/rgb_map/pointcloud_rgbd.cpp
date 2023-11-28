@@ -197,7 +197,7 @@ void Global_map::service_refresh_pts_for_projection()
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
         m_mutex_img_pose_for_projection->lock();
-         
+
         *img_for_projection = m_img_for_projection;
         m_mutex_img_pose_for_projection->unlock();
         if (img_for_projection->m_img_cols == 0 || img_for_projection->m_img_rows == 0)

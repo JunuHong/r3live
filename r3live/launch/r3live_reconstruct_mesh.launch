@@ -19,7 +19,7 @@
     <param name="decimate_mesh" value="0.8" />
 
     <!-- spurious factor for removing faces with too long edges or isolated components (set 0 to disabled) -->
-    <param name="if_remove_spurious" value="50.0" />
+    <param name="if_remove_spurious" value="2z`0.0" />
     
     <!-- The flag tp control the removal of spike faces -->
     <param name="if_remove_spikes" value="true" />
